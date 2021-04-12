@@ -1,0 +1,6 @@
+rootProject.name = 'boot-kafka-streams'
+
+include 'function'
+include 'stock-quote-supplier'
+include 'stock-quote-consumer'
+include 'stock-quote-processor'

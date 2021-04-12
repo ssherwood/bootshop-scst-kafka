@@ -1,0 +1,48 @@
+##
+## Reference:
+## https://docs.spring.io/spring-cloud-stream/docs/current/reference/html/spring-cloud-stream.html#_consumer_properties
+## https://cloud.spring.io/spring-cloud-stream-binder-kafka/spring-cloud-stream-binder-kafka.html#kafka-consumer-properties
+##
+
+spring.application.name: "stock-quote-consumer"
+
+spring.cloud.stream:
+  bindings:
+    simpleStockQuote-in-0:
+      group: ${spring.application.name}-logger
+      destination: stock-quotes
+      consumer:
+        use-native-decoding: true
+  kafka.bindings:
+    simpleStockQuote-in-0:
+      consumer:
+        #reset-offsets: true
+        start-offset: earliest
+        configuration:
+          key.deserializer: org.springframework.kafka.support.serializer.ErrorHandlingDeserializer
+          value.deserializer: org.springframework.kafka.support.serializer.ErrorHandlingDeserializer
+        max-attempts: 1
+        enable-dlq: true
+        dlq-name: stock-quotes-consumer-logger.dlq
+        dlq-partitions: 5
+        dlq-producer-properties:
+          acks: all
+          compression.type: snappy
+          configuration:
+            key.serializer: org.apache.kafka.common.serialization.StringSerializer
+            value.serializer: org.springframework.kafka.support.serializer.JsonSerializer
+  kafka.binder:
+    #brokers: kafka1.test.local:9192, kafka2.test.local:9292, kafka3.test.local:9392
+    auto-add-partitions: true
+    auto-create-topics: true
+
+spring.kafka:
+  bootstrap-servers: kafka1.test.local:9192, kafka2.test.local:9292, kafka3.test.local:9392
+
+spring.kafka.consumer.properties:
+  spring.json.trusted.packages: "io.undertree.workshop.scst"
+  spring.deserializer.key.delegate.class: org.apache.kafka.common.serialization.StringDeserializer
+  spring.deserializer.value.delegate.class: org.springframework.kafka.support.serializer.JsonDeserializer
+
+
+#deserialization-exception-handler: sendToDlq # this doesn't seem to work, appears for only kafka-streams!

@@ -1,0 +1,46 @@
+# SCSt config
+
+spring.application.name: "stock-quote-processor"
+
+spring.cloud.function.definition: enhanceStockQuote|calculatePriceDelta
+
+spring.cloud.stream:
+  bindings:
+    enhanceStockQuote|calculatePriceDelta-in-0:
+      binder: kafka
+      group: ${spring.application.name}-enhancer
+      destination: stock-quotes
+      consumer:
+        use-native-decoding: true
+    enhanceStockQuote|calculatePriceDelta-out-0:
+      binder: kafka
+      destination: stock-quotes.enhanced
+      producer:
+        use-native-encoding: true
+        partition-count: 5
+  kafka.bindings:
+    enhanceStockQuote|calculatePriceDelta-in-0:
+      consumer:
+        #reset-offsets: true
+        start-offset: earliest
+        configuration:
+          key.deserializer: org.apache.kafka.common.serialization.StringDeserializer
+          value.deserializer: org.springframework.kafka.support.serializer.JsonDeserializer
+    enhanceStockQuote|calculatePriceDelta-out-0:
+      producer:
+        message-key-expression: payload.symbol
+        configuration:
+          acks: all
+          compression.type: snappy
+          key.serializer: org.apache.kafka.common.serialization.StringSerializer
+          value.serializer: org.springframework.kafka.support.serializer.JsonSerializer
+          linger.ms: 100
+          batch.size: 10000
+  kafka.binder:
+    brokers: kafka1.test.local:9192, kafka2.test.local:9292, kafka3.test.local:9392
+    auto-add-partitions: true
+    min-partition-count: 3
+    replication-factor: 3
+
+spring.kafka.consumer.properties:
+  spring.json.trusted.packages: "io.undertree.workshop.scst"

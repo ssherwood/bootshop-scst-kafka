@@ -1,0 +1,39 @@
+# Configs
+#
+# s.c.s.bindings - this block is for mapping all in-out bindings and mapping them to specific binders
+# - https://docs.spring.io/spring-cloud-stream/docs/current/reference/html/spring-cloud-stream.html#binding-properties
+# - https://docs.spring.io/spring-cloud-stream/docs/current/reference/html/spring-cloud-stream.html#_producer_properties
+#
+# READ: https://spring.io/blog/2021/02/03/demystifying-spring-cloud-stream-producers-with-apache-kafka-partitions
+
+spring.application.name: "stock-quote-supplier"
+
+spring.cloud.stream:
+  poller:
+    initial-delay: 1000
+    fixed-delay: 5000
+  bindings:
+    simpleStockQuote-out-0:
+      binder: kafka
+      destination: stock-quotes
+      producer:
+        use-native-encoding: true
+        partition-count: 5
+  kafka.bindings:
+    simpleStockQuote-out-0:
+      producer:
+        message-key-expression: payload.symbol
+  kafka.binder:
+    brokers: kafka1.test.local:9192, kafka2.test.local:9292, kafka3.test.local:9392
+    auto-add-partitions: true
+    min-partition-count: 3
+    replication-factor: 3
+    producer-properties:
+      acks: all
+      compression.type: snappy
+      key.serializer: org.apache.kafka.common.serialization.StringSerializer
+      value.serializer: org.springframework.kafka.support.serializer.JsonSerializer
+      linger.ms: 100
+      batch.size: 10000
+
+# Refer to https://docs.spring.io/spring-cloud-stream-binder-kafka/docs/current/reference/html/spring-cloud-stream-binder-kafka.html#kafka-producer-properties

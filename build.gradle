@@ -1,0 +1,45 @@
+buildscript {
+    ext {
+        springDependencyManagement = '1.0.11.RELEASE'
+        springBootVersion = '2.4.3'
+        springCloudVersion = '2020.0.1'
+        wavefrontVersion = '2.1.0-RC1'
+    }
+
+    repositories {
+        gradlePluginPortal()
+    }
+
+    dependencies {
+        classpath "org.springframework.boot:spring-boot-gradle-plugin:${springBootVersion}"
+    }
+}
+
+defaultTasks "clean", "build"
+
+subprojects {
+    apply plugin: 'java'
+    apply plugin: 'io.spring.dependency-management'
+
+    group = 'io.undertree.workshop.kafka'
+    version = '0.0.1-SNAPSHOT'
+    sourceCompatibility = JavaVersion.VERSION_11
+
+    configurations {
+        compileOnly {
+            extendsFrom annotationProcessor
+        }
+    }
+
+    repositories {
+        mavenCentral()
+        maven { url 'https://repo.spring.io/milestone' }
+    }
+
+    dependencyManagement {
+        imports {
+            mavenBom "com.wavefront:wavefront-spring-boot-bom:${wavefrontVersion}"
+            mavenBom "org.springframework.cloud:spring-cloud-dependencies:${springCloudVersion}"
+        }
+    }
+}

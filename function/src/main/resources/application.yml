@@ -1,0 +1,6 @@
+spring:
+  cloud:
+    function:
+      definition: toUppercase|logMessage
+      scan:
+        packages: "io.undertree.workshop.function.functions"
